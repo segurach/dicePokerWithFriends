@@ -323,9 +323,15 @@ export default function App() {
 
       <Text style={styles.info}>Rolls left: {rollsLeft}</Text>
 
-      {isMyTurn && rollsLeft > 0 && (
-        <TouchableOpacity style={styles.rollButton} onPress={rollDice}>
-          <Text style={styles.rollButtonText}>ROLL DICE 🎲</Text>
+      {isMyTurn && (
+        <TouchableOpacity
+          style={[styles.rollButton, rollsLeft === 0 && styles.rollButtonDisabled]}
+          onPress={rollDice}
+          disabled={rollsLeft === 0}
+        >
+          <Text style={styles.rollButtonText}>
+            {rollsLeft > 0 ? "ROLL DICE 🎲" : "Select Score"}
+          </Text>
         </TouchableOpacity>
       )}
 
@@ -349,8 +355,8 @@ export default function App() {
           </TouchableOpacity>
         ))}
         <View style={[styles.scoreRow, styles.totalRow]}>
-          <Text style={[styles.scoreLabel, { fontWeight: 'bold' }]}>TOTAL</Text>
-          <Text style={[styles.scoreValue, { fontWeight: 'bold' }]}>{myPlayer?.score || 0}</Text>
+          <Text style={[styles.scoreLabel, { fontWeight: 'bold', fontSize: 20 }]}>TOTAL</Text>
+          <Text style={[styles.scoreValue, { fontWeight: 'bold', fontSize: 24 }]}>{myPlayer?.score || 0}</Text>
         </View>
       </View>
     </ScrollView>
@@ -517,6 +523,10 @@ const styles = StyleSheet.create({
     elevation: 5,
     marginBottom: 15,
   },
+  rollButtonDisabled: {
+    backgroundColor: '#bdbdbd', // Grey
+    elevation: 0,
+  },
   buttonText: {
     color: 'white',
     fontSize: 18,
@@ -595,11 +605,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 8,
+    padding: 10, // Increased from 8
     backgroundColor: '#fff',
     borderRadius: 8,
     width: '48%',
-    marginBottom: 6,
+    marginBottom: 10, // Increased from 6
     elevation: 2,
   },
   scoreRowFilled: {
@@ -609,9 +619,12 @@ const styles = StyleSheet.create({
   totalRow: {
     width: '100%',
     backgroundColor: '#ffeb3b', // Yellow for total
-    marginTop: 10,
-    borderWidth: 0,
-    elevation: 4,
+    marginTop: 15, // Increased from 10
+    paddingVertical: 15, // Added padding
+    paddingHorizontal: 10,
+    borderWidth: 2, // Added border
+    borderColor: '#fbc02d', // Darker yellow border
+    elevation: 6, // Increased elevation
   },
   scoreLabel: {
     fontSize: 13,
