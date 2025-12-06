@@ -6,6 +6,45 @@ import io from 'socket.io-client';
 // 'localhost' only works on iOS Simulator, NOT on Android Emulator or physical devices.
 const SERVER_URL = 'http://192.168.1.20:3000';
 
+// Visual Die Component
+const Die = ({ value, isKept, isEmpty, onPress, disabled }) => {
+  const getDots = (v) => {
+    switch (v) {
+      case 1: return [<View key="c" style={styles.dotCenter} />];
+      case 2: return [<View key="tl" style={styles.dotTL} />, <View key="br" style={styles.dotBR} />];
+      case 3: return [<View key="tl" style={styles.dotTL} />, <View key="c" style={styles.dotCenter} />, <View key="br" style={styles.dotBR} />];
+      case 4: return [<View key="tl" style={styles.dotTL} />, <View key="tr" style={styles.dotTR} />, <View key="bl" style={styles.dotBL} />, <View key="br" style={styles.dotBR} />];
+      case 5: return [<View key="tl" style={styles.dotTL} />, <View key="tr" style={styles.dotTR} />, <View key="c" style={styles.dotCenter} />, <View key="bl" style={styles.dotBL} />, <View key="br" style={styles.dotBR} />];
+      case 6: return [
+        <View key="tl" style={styles.dotTL} />, <View key="tr" style={styles.dotTR} />,
+        <View key="ml" style={styles.dotML} />, <View key="mr" style={styles.dotMR} />,
+        <View key="bl" style={styles.dotBL} />, <View key="br" style={styles.dotBR} />
+      ];
+      default: return [];
+    }
+  };
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      style={[
+        styles.die,
+        isKept && styles.dieKept,
+        isEmpty && styles.dieEmpty
+      ]}
+    >
+      {isEmpty ? (
+        <Text style={styles.dieText}>?</Text>
+      ) : (
+        <View style={styles.dieInner}>
+          {getDots(value)}
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+};
+
 export default function App() {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -178,25 +217,23 @@ export default function App() {
 
       <View style={styles.diceContainer}>
         {dice.map((value, index) => (
-          <TouchableOpacity
+          <Die
             key={index}
+            value={value}
+            isKept={keptIndices.includes(index)}
+            isEmpty={value === 0}
             onPress={() => isMyTurn && toggleDie(index)}
             disabled={value === 0}
-            style={[
-              styles.die,
-              keptIndices.includes(index) && styles.dieKept,
-              value === 0 && styles.dieEmpty
-            ]}
-          >
-            <Text style={styles.dieText}>{value === 0 ? '?' : value}</Text>
-          </TouchableOpacity>
+          />
         ))}
       </View>
 
       <Text style={styles.info}>Rolls left: {rollsLeft}</Text>
 
       {isMyTurn && rollsLeft > 0 && (
-        <Button title="Roll Dice" onPress={rollDice} />
+        <TouchableOpacity style={styles.rollButton} onPress={rollDice}>
+          <Text style={styles.rollButtonText}>ROLL DICE 🎲</Text>
+        </TouchableOpacity>
       )}
 
       <View style={styles.separator} />
@@ -228,8 +265,8 @@ export default function App() {
   const renderLobby = () => (
     <View style={styles.centerContent}>
       <Text style={styles.title}>Yahtzee Friends</Text>
-      <Text style={{ color: isConnected ? 'green' : 'red', marginBottom: 20 }}>
-        {isConnected ? 'Connected to Server' : 'Disconnected (Check IP)'}
+      <Text style={{ color: isConnected ? '#4caf50' : '#f44336', marginBottom: 20, fontWeight: 'bold' }}>
+        {isConnected ? '● Connected to Server' : '● Disconnected'}
       </Text>
 
       {!currentRoom ? (
@@ -237,31 +274,39 @@ export default function App() {
           <TextInput
             style={styles.input}
             placeholder="Your Name"
+            placeholderTextColor="#999"
             value={playerName}
             onChangeText={setPlayerName}
           />
-          <Button title="Create Room" onPress={createRoom} />
+          <TouchableOpacity style={styles.primaryButton} onPress={createRoom}>
+            <Text style={styles.buttonText}>Create Room</Text>
+          </TouchableOpacity>
 
           <View style={styles.separator} />
 
           <TextInput
             style={styles.input}
             placeholder="Room Code"
+            placeholderTextColor="#999"
             value={roomCode}
             onChangeText={setRoomCode}
             autoCapitalize="characters"
           />
-          <Button title="Join Room" onPress={joinRoom} />
+          <TouchableOpacity style={styles.secondaryButton} onPress={joinRoom}>
+            <Text style={styles.buttonText}>Join Room</Text>
+          </TouchableOpacity>
         </View>
       ) : (
-        <View>
+        <View style={{ width: '100%', alignItems: 'center' }}>
           <Text style={styles.roomCode}>Room: {currentRoom}</Text>
           <Text style={styles.subtitle}>Players:</Text>
           {players.map((p, i) => (
             <Text key={i} style={styles.player}>{p.name}</Text>
           ))}
           <View style={styles.separator} />
-          <Button title="Start Game" onPress={startGame} />
+          <TouchableOpacity style={styles.primaryButton} onPress={startGame}>
+            <Text style={styles.buttonText}>Start Game</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -277,7 +322,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#1a237e', // Dark Blue
     padding: 20,
   },
   centerContent: {
@@ -286,9 +331,35 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#e8eaf6',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  info: {
+    fontSize: 16,
+    color: '#c5cae9',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  player: {
+    fontSize: 18,
+    color: '#fff',
+    marginBottom: 5,
+  },
+  roomCode: {
     fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 40,
+    color: '#ffeb3b', // Yellow
+    marginBottom: 20,
   },
   inputContainer: {
     width: '100%',
@@ -298,96 +369,144 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderWidth: 1,
     borderColor: '#ccc',
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 5,
+    padding: 15,
+    marginBottom: 15,
+    borderRadius: 8,
+    fontSize: 16,
   },
   separator: {
-    height: 20,
+    height: 30,
   },
-  roomCode: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: 'blue',
+  // Buttons
+  primaryButton: {
+    backgroundColor: '#ff6f00', // Amber/Orange
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 10,
+    elevation: 3,
   },
-  subtitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  secondaryButton: {
+    backgroundColor: '#5c6bc0', // Lighter Blue
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
     marginBottom: 10,
   },
-  player: {
-    fontSize: 16,
-    marginBottom: 5,
+  rollButton: {
+    backgroundColor: '#ff6f00',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 30,
+    alignSelf: 'center',
+    elevation: 5,
+    marginBottom: 15,
   },
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  rollButtonText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+  },
+  // Dice
   diceContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
-    marginBottom: 30,
+    marginBottom: 20,
+    marginTop: 10,
   },
   die: {
     width: 50,
     height: 50,
     backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#333',
-    borderRadius: 8,
+    borderColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  dieInner: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
   },
   dieKept: {
-    backgroundColor: '#add8e6', // Light blue
-    borderWidth: 2,
-    borderColor: 'blue',
+    backgroundColor: '#b2dfdb', // Light Teal
+    borderColor: '#00bfa5', // Teal
+    borderWidth: 3,
+    transform: [{ scale: 0.95 }], // Slight shrink effect
   },
   dieEmpty: {
-    backgroundColor: '#e0e0e0',
-    borderColor: '#999',
+    backgroundColor: '#cfd8dc', // Blue Grey
+    borderColor: '#90a4ae',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   dieText: {
-    fontSize: 24,
+    fontSize: 30,
     fontWeight: 'bold',
+    color: '#757575',
   },
-  info: {
-    fontSize: 16,
-    marginBottom: 20,
-  },
+  // Dots (Adjusted for 50x50 die)
+  dotCenter: { position: 'absolute', top: 19, left: 19, width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
+  dotTL: { position: 'absolute', top: 6, left: 6, width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
+  dotTR: { position: 'absolute', top: 6, right: 6, width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
+  dotML: { position: 'absolute', top: 19, left: 6, width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
+  dotMR: { position: 'absolute', top: 19, right: 6, width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
+  dotBL: { position: 'absolute', bottom: 6, left: 6, width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
+  dotBR: { position: 'absolute', bottom: 6, right: 6, width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
+  // Scorecard
   scorecard: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     width: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Glassmorphism effect
+    padding: 10,
+    borderRadius: 10,
   },
   scoreRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 10,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#ccc',
+    padding: 8,
+    backgroundColor: '#fff',
     borderRadius: 8,
-    width: '48%', // 2 columns
-    marginBottom: 8,
+    width: '48%',
+    marginBottom: 6,
+    elevation: 2,
   },
   scoreRowFilled: {
     backgroundColor: '#e0e0e0',
+    opacity: 0.8,
   },
   totalRow: {
     width: '100%',
-    backgroundColor: '#d0d0d0',
+    backgroundColor: '#ffeb3b', // Yellow for total
     marginTop: 10,
-    borderWidth: 2,
-    borderColor: '#333',
+    borderWidth: 0,
+    elevation: 4,
   },
   scoreLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: 'bold',
+    color: '#333',
     flex: 1,
   },
   scoreValue: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold',
+    color: '#1a237e',
   },
 });
