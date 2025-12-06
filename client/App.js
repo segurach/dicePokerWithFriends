@@ -6,6 +6,7 @@ import { Audio } from 'expo-av';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import Die from './components/Die';
 import ScoreRow from './components/ScoreRow';
+import { translations } from './translations';
 
 // REPLACE WITH YOUR LOCAL IP ADDRESS (e.g., 'http://192.168.1.15:3000')
 // 'localhost' only works on iOS Simulator, NOT on Android Emulator or physical devices.
@@ -22,10 +23,19 @@ export default function App() {
   const [dice, setDice] = useState([0, 0, 0, 0, 0]);
   const [keptIndices, setKeptIndices] = useState([]);
   const keptIndicesRef = useRef([]); // Ref to access latest state in event listener
+  const playerNameRef = useRef(''); // Ref to access latest player name in listener
+
+  useEffect(() => {
+    playerNameRef.current = playerName;
+  }, [playerName]);
 
   const [rollsLeft, setRollsLeft] = useState(3);
   const [currentTurnId, setCurrentTurnId] = useState(null);
   const [myId, setMyId] = useState(null);
+
+  // Language state and translation function
+  const [language, setLanguage] = useState('fr'); // Default to French
+  const t = (key) => translations[language][key];
 
   // Animation values
   const shakeAnim = useRef(new Animated.Value(0)).current;
@@ -59,7 +69,6 @@ export default function App() {
   };
 
   const runDiceAnimation = (indicesToSkip = []) => {
-    // ... (animation logic)
     const animations = diceAnimValues.map((animValue, index) => {
       if (!indicesToSkip.includes(index)) {
         animValue.setValue(0);
@@ -93,9 +102,10 @@ export default function App() {
 
     newSocket.on('room_created', (code) => {
       setCurrentRoom(code);
-      setPlayers([{ name: playerName, id: newSocket.id }]);
+      setPlayers([{ name: playerNameRef.current, id: newSocket.id }]);
     });
 
+    // ... (other listeners)
     newSocket.on('player_joined', (updatedPlayers) => {
       setPlayers(updatedPlayers);
     });
@@ -130,23 +140,23 @@ export default function App() {
       setGameState('finished');
       playSound('game_over');
       if (confettiRef.current) confettiRef.current.start();
-      // Removed Alert to let user see the confetti and UI
+      // Alert removed, handled by UI
     });
 
     newSocket.on('error', (msg) => {
-      Alert.alert('Error', msg);
+      Alert.alert(t('error'), msg);
     });
 
     return () => newSocket.disconnect();
-  }, [playerName, diceAnimValues]);
+  }, []); // Empty dependency array to connect only once
 
   const createRoom = () => {
-    if (!playerName) return Alert.alert('Error', 'Enter name first');
+    if (!playerName) return Alert.alert(t('error'), t('enterNameFirst'));
     socket.emit('create_room', playerName);
   };
 
   const joinRoom = () => {
-    if (!playerName || !roomCode) return Alert.alert('Error', 'Enter name and code');
+    if (!playerName || !roomCode) return Alert.alert(t('error'), t('enterNameAndCode'));
     socket.emit('join_room', { roomCode, playerName });
     setCurrentRoom(roomCode);
   };
@@ -226,13 +236,14 @@ export default function App() {
 
   const submitScore = (category) => {
     const potentialScore = calculateScore(category, dice);
+    const categoryName = t(category);
     Alert.alert(
-      "Confirmer le score",
-      `Marquer ${potentialScore} points pour ${category.toUpperCase().replace(/_/g, ' ')} ?`,
+      t('confirmScore'),
+      t('scorePointsFor').replace('{score}', potentialScore).replace('{category}', categoryName),
       [
-        { text: "Annuler", style: "cancel" },
+        { text: t('cancel'), style: "cancel" },
         {
-          text: "Valider",
+          text: t('validate'),
           onPress: () => {
             playSound('score');
             if (category === 'yahtzee' && potentialScore === 50) {
@@ -257,9 +268,9 @@ export default function App() {
 
   const renderGame = () => (
     <ScrollView contentContainerStyle={styles.scrollContent}>
-      <Text style={styles.title}>Room: {currentRoom}</Text>
+      <Text style={styles.title}>{t('room')}: {currentRoom}</Text>
       <Text style={styles.subtitle}>
-        {isMyTurn ? "It's YOUR turn!" : `Waiting for ${players.find(p => p.id === currentTurnId)?.name}...`}
+        {isMyTurn ? t('itsYourTurn') : t('waitingForPlayer').replace('{player}', players.find(p => p.id === currentTurnId)?.name || 'player')}
       </Text>
 
       <View style={styles.diceContainer}>
@@ -283,7 +294,7 @@ export default function App() {
         })}
       </View>
 
-      <Text style={styles.info}>Rolls left: {rollsLeft}</Text>
+      <Text style={styles.info}>{t('rollsLeft')}: {rollsLeft}</Text>
 
       {isMyTurn && (
         <TouchableOpacity
@@ -292,13 +303,13 @@ export default function App() {
           disabled={rollsLeft === 0}
         >
           <Text style={styles.rollButtonText}>
-            {rollsLeft > 0 ? "ROLL DICE 🎲" : "Select Score"}
+            {rollsLeft > 0 ? t('rollDice') : t('selectScore')}
           </Text>
         </TouchableOpacity>
       )}
 
       <View style={styles.separator} />
-      <Text style={styles.subtitle}>Scorecard</Text>
+      <Text style={styles.subtitle}>{t('scorecard')}</Text>
       <View style={styles.scorecard}>
         {CATEGORIES.map(cat => {
           const isFilled = myScorecard[cat] !== undefined;
@@ -308,7 +319,7 @@ export default function App() {
           return (
             <ScoreRow
               key={cat}
-              label={cat.toUpperCase().replace(/_/g, ' ')}
+              label={t(cat)}
               score={myScorecard[cat]}
               previewScore={previewScore}
               isFilled={isFilled}
@@ -318,7 +329,7 @@ export default function App() {
           );
         })}
         <ScoreRow
-          label="TOTAL"
+          label={t('total')}
           score={myPlayer?.score || 0}
           isFilled={true}
           isTotal={true}
@@ -329,48 +340,55 @@ export default function App() {
   );
   const renderLobby = () => (
     <View style={styles.centerContent}>
-      <Text style={styles.title}>Yahtzee Friends</Text>
+      <TouchableOpacity
+        style={styles.langButton}
+        onPress={() => setLanguage(l => l === 'fr' ? 'en' : 'fr')}
+      >
+        <Text style={styles.langButtonText}>{language === 'fr' ? '🇬🇧 EN' : '🇫🇷 FR'}</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.title}>{t('title')}</Text>
       <Text style={{ color: isConnected ? '#4caf50' : '#f44336', marginBottom: 20, fontWeight: 'bold' }}>
-        {isConnected ? '● Connected to Server' : '● Disconnected'}
+        {isConnected ? t('connectedToServer') : t('disconnected')}
       </Text>
 
       {!currentRoom ? (
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="Your Name"
+            placeholder={t('yourName')}
             placeholderTextColor="#999"
             value={playerName}
             onChangeText={setPlayerName}
           />
           <TouchableOpacity style={styles.primaryButton} onPress={createRoom}>
-            <Text style={styles.buttonText}>Create Room</Text>
+            <Text style={styles.buttonText}>{t('createRoom')}</Text>
           </TouchableOpacity>
 
           <View style={styles.separator} />
 
           <TextInput
             style={styles.input}
-            placeholder="Room Code"
+            placeholder={t('roomCode')}
             placeholderTextColor="#999"
             value={roomCode}
             onChangeText={setRoomCode}
             autoCapitalize="characters"
           />
           <TouchableOpacity style={styles.secondaryButton} onPress={joinRoom}>
-            <Text style={styles.buttonText}>Join Room</Text>
+            <Text style={styles.buttonText}>{t('joinRoom')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <View style={{ width: '100%', alignItems: 'center' }}>
-          <Text style={styles.roomCode}>Room: {currentRoom}</Text>
-          <Text style={styles.subtitle}>Players:</Text>
+          <Text style={styles.roomCode}>{t('room')}: {currentRoom}</Text>
+          <Text style={styles.subtitle}>{t('players')}</Text>
           {players.map((p, i) => (
             <Text key={i} style={styles.player}>{p.name}</Text>
           ))}
           <View style={styles.separator} />
           <TouchableOpacity style={styles.primaryButton} onPress={startGame}>
-            <Text style={styles.buttonText}>Start Game</Text>
+            <Text style={styles.buttonText}>{t('startGame')}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -379,8 +397,8 @@ export default function App() {
 
   const renderGameOver = () => (
     <View style={styles.centerContent}>
-      <Text style={styles.title}>GAME OVER 🏆</Text>
-      <Text style={styles.subtitle}>Final Scores:</Text>
+      <Text style={styles.title}>{t('gameOver')}</Text>
+      <Text style={styles.subtitle}>{t('finalScores')}</Text>
       {players
         .sort((a, b) => b.score - a.score)
         .map((p, i) => (
@@ -392,7 +410,7 @@ export default function App() {
         ))}
       <View style={styles.separator} />
       <TouchableOpacity style={styles.primaryButton} onPress={resetGame}>
-        <Text style={styles.buttonText}>Back to Lobby</Text>
+        <Text style={styles.buttonText}>{t('backToLobby')}</Text>
       </TouchableOpacity>
     </View>
   );
