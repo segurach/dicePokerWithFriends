@@ -158,10 +158,20 @@ export default function App() {
     newSocket.on('dice_updated', ({ dice, rollsLeft }) => {
       setDice(dice);
       setRollsLeft(rollsLeft);
+
+      // Play sound only if it's my turn
+      if (currentTurnId === newSocket.id) {
+        playSound('roll');
+      }
+
       runDiceAnimation(keptIndicesRef.current); // Use ref to get latest kept indices
     });
 
     newSocket.on('turn_updated', ({ currentTurn, dice, rollsLeft, players }) => {
+      // Play score sound for the player who just finished their turn (scored)
+      // This happens when turn changes, so the previous player scored
+      playSound('score');
+
       setCurrentTurnId(currentTurn);
       setDice(dice);
       setRollsLeft(rollsLeft);
@@ -235,7 +245,7 @@ export default function App() {
         {
           text: t('validate'),
           onPress: () => {
-            playSound('score');
+            // Sound will be played via turn_updated event for the scoring player
             if (category === 'yahtzee' && potentialScore === 50) {
               if (confettiRef.current) confettiRef.current.start();
             }
