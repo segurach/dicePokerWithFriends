@@ -18,12 +18,26 @@ export default function PlayerScorecard({ player, visible, onClose, t }) {
             transparent={true}
             animationType="fade"
             onRequestClose={onClose}
+            accessible={true}
+            accessibilityViewIsModal={true}
         >
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
                     <View style={styles.header}>
-                        <Text style={styles.playerName}>{player.name}</Text>
-                        <Text style={styles.totalScore}>{t('total')}: {player.score}</Text>
+                        <Text
+                            style={styles.playerName}
+                            accessible={true}
+                            accessibilityRole="header"
+                        >
+                            {player.name}
+                        </Text>
+                        <Text
+                            style={styles.totalScore}
+                            accessible={true}
+                            accessibilityRole="text"
+                        >
+                            {t('total')}: {player.score}
+                        </Text>
                     </View>
 
                     <ScrollView style={styles.scrollView}>
@@ -36,9 +50,12 @@ export default function PlayerScorecard({ player, visible, onClose, t }) {
                                     <View
                                         key={category}
                                         style={[styles.categoryRow, isFilled && styles.filledRow]}
+                                        accessible={true}
+                                        accessibilityRole="text"
+                                        accessibilityLabel={`${t(category)}: ${isFilled ? score + ' points' : 'not filled'}`}
                                     >
-                                        <Text style={styles.categoryLabel}>{t(category)}</Text>
-                                        <Text style={[styles.categoryScore, !isFilled && styles.emptyScore]}>
+                                        <Text style={styles.categoryLabel} importantForAccessibility="no">{t(category)}</Text>
+                                        <Text style={[styles.categoryScore, !isFilled && styles.emptyScore]} importantForAccessibility="no">
                                             {isFilled ? score : t('notFilled')}
                                         </Text>
                                     </View>
@@ -47,7 +64,14 @@ export default function PlayerScorecard({ player, visible, onClose, t }) {
                         </View>
                     </ScrollView>
 
-                    <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                    <TouchableOpacity
+                        style={styles.closeButton}
+                        onPress={onClose}
+                        accessible={true}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('closeScorecard')}
+                        accessibilityHint="Closes the scorecard and returns to the game"
+                    >
                         <Text style={styles.closeButtonText}>{t('closeScorecard')}</Text>
                     </TouchableOpacity>
                 </View>

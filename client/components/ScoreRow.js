@@ -2,6 +2,27 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const ScoreRow = ({ label, score, previewScore, isFilled, onPress, disabled, isTotal }) => {
+    const getAccessibilityLabel = () => {
+        if (isTotal) {
+            return `Total score: ${score}`;
+        }
+        if (isFilled) {
+            return `${label}: ${score} points, already scored`;
+        }
+        if (previewScore !== null) {
+            return `${label}: ${previewScore} points available`;
+        }
+        return `${label}: not available yet`;
+    };
+
+    const getAccessibilityHint = () => {
+        if (disabled || isFilled || isTotal) return undefined;
+        if (previewScore !== null) {
+            return `Tap to score ${previewScore} points for ${label}`;
+        }
+        return undefined;
+    };
+
     return (
         <TouchableOpacity
             style={[
@@ -11,17 +32,22 @@ const ScoreRow = ({ label, score, previewScore, isFilled, onPress, disabled, isT
             ]}
             onPress={onPress}
             disabled={disabled}
+            accessible={true}
+            accessibilityRole={isTotal ? "text" : "button"}
+            accessibilityLabel={getAccessibilityLabel()}
+            accessibilityHint={getAccessibilityHint()}
+            accessibilityState={{ disabled: disabled || isFilled }}
         >
             <Text style={[
                 styles.scoreLabel,
                 isTotal && { fontWeight: 'bold', fontSize: 20 }
-            ]}>
+            ]} importantForAccessibility="no">
                 {label}
             </Text>
             <Text style={[
                 isFilled ? styles.scoreValue : styles.scorePreview,
                 isTotal && { fontWeight: 'bold', fontSize: 24 }
-            ]}>
+            ]} importantForAccessibility="no">
                 {isFilled ? score : (previewScore !== null ? previewScore : '-')}
             </Text>
         </TouchableOpacity>

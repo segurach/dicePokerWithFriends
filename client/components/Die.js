@@ -18,10 +18,25 @@ const Die = ({ value, isKept, isEmpty, onPress, disabled, animStyle }) => {
         }
     };
 
+    const getAccessibilityLabel = () => {
+        if (isEmpty) return "Not rolled yet";
+        return `Die showing ${value}${isKept ? ', kept' : ''}`;
+    };
+
+    const getAccessibilityHint = () => {
+        if (disabled || isEmpty) return undefined;
+        return isKept ? "Tap to unkeep this die" : "Tap to keep this die";
+    };
+
     return (
         <TouchableOpacity
             onPress={onPress}
             disabled={disabled}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel={getAccessibilityLabel()}
+            accessibilityHint={getAccessibilityHint()}
+            accessibilityState={{ disabled, selected: isKept }}
         >
             <Animated.View style={[
                 styles.die,
@@ -30,9 +45,9 @@ const Die = ({ value, isKept, isEmpty, onPress, disabled, animStyle }) => {
                 animStyle
             ]}>
                 {isEmpty ? (
-                    <Text style={styles.dieText}>?</Text>
+                    <Text style={styles.dieText} importantForAccessibility="no">?</Text>
                 ) : (
-                    <View style={styles.dieInner}>
+                    <View style={styles.dieInner} importantForAccessibility="no">
                         {getDots(value)}
                     </View>
                 )}

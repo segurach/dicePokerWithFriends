@@ -45,7 +45,13 @@ export default function Game({
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContent}>
-            <Text style={styles.title}>{t('room')}: {currentRoom}</Text>
+            <Text
+                style={styles.title}
+                accessible={true}
+                accessibilityRole="header"
+            >
+                {t('room')}: {currentRoom}
+            </Text>
 
             <Leaderboard
                 players={players}
@@ -55,7 +61,12 @@ export default function Game({
                 t={t}
             />
 
-            <Text style={styles.subtitle}>
+            <Text
+                style={styles.subtitle}
+                accessible={true}
+                accessibilityRole="text"
+                accessibilityLiveRegion="polite"
+            >
                 {isMyTurn ? t('itsYourTurn') : t('waitingForPlayer').replace('{player}', players.find(p => p.id === currentTurnId)?.name || 'player')}
             </Text>
 
@@ -80,13 +91,25 @@ export default function Game({
                 })}
             </View>
 
-            <Text style={styles.info}>{t('rollsLeft')}: {rollsLeft}</Text>
+            <Text
+                style={styles.info}
+                accessible={true}
+                accessibilityRole="text"
+                accessibilityLiveRegion="polite"
+            >
+                {t('rollsLeft')}: {rollsLeft}
+            </Text>
 
             {isMyTurn && (
                 <TouchableOpacity
                     style={[styles.rollButton, rollsLeft === 0 && styles.rollButtonDisabled]}
                     onPress={rollDice}
                     disabled={rollsLeft === 0}
+                    accessible={true}
+                    accessibilityRole="button"
+                    accessibilityLabel={rollsLeft > 0 ? t('rollDice') : t('selectScore')}
+                    accessibilityHint={rollsLeft > 0 ? `${rollsLeft} rolls remaining` : "Choose a category to score"}
+                    accessibilityState={{ disabled: rollsLeft === 0 }}
                 >
                     <Text style={styles.rollButtonText}>
                         {rollsLeft > 0 ? t('rollDice') : t('selectScore')}
@@ -95,7 +118,13 @@ export default function Game({
             )}
 
             <View style={styles.separator} />
-            <Text style={styles.subtitle}>{t('scorecard')}</Text>
+            <Text
+                style={styles.subtitle}
+                accessible={true}
+                accessibilityRole="header"
+            >
+                {t('scorecard')}
+            </Text>
             <View style={styles.scorecard}>
                 {CATEGORIES.map(cat => {
                     const isFilled = myScorecard[cat] !== undefined;

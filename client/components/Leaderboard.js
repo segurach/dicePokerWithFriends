@@ -7,7 +7,13 @@ export default function Leaderboard({ players, currentTurnId, myId, onPlayerPres
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>{t('leaderboard')}</Text>
+            <Text
+                style={styles.title}
+                accessible={true}
+                accessibilityRole="header"
+            >
+                {t('leaderboard')}
+            </Text>
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -18,6 +24,14 @@ export default function Leaderboard({ players, currentTurnId, myId, onPlayerPres
                     const isCurrentTurn = player.id === currentTurnId;
                     const isFirst = index === 0;
 
+                    const getAccessibilityLabel = () => {
+                        let label = `${player.name}: ${player.score} points`;
+                        if (isFirst) label = `First place, ${label}`;
+                        if (isCurrentTurn) label += ', current turn';
+                        if (isMe) label += ', you';
+                        return label;
+                    };
+
                     return (
                         <TouchableOpacity
                             key={player.id}
@@ -27,13 +41,17 @@ export default function Leaderboard({ players, currentTurnId, myId, onPlayerPres
                                 isCurrentTurn && styles.currentTurnCard,
                             ]}
                             onPress={() => onPlayerPress(player)}
+                            accessible={true}
+                            accessibilityRole="button"
+                            accessibilityLabel={getAccessibilityLabel()}
+                            accessibilityHint="Tap to view detailed scorecard"
                         >
-                            <Text style={[styles.playerName, isMe && styles.myPlayerName]}>
+                            <Text style={[styles.playerName, isMe && styles.myPlayerName]} importantForAccessibility="no">
                                 {isFirst && '👑 '}
                                 {player.name}
                                 {isCurrentTurn && ' 🎲'}
                             </Text>
-                            <Text style={[styles.playerScore, isMe && styles.myPlayerScore]}>
+                            <Text style={[styles.playerScore, isMe && styles.myPlayerScore]} importantForAccessibility="no">
                                 {player.score}
                             </Text>
                         </TouchableOpacity>

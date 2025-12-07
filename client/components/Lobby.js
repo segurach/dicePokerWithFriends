@@ -32,11 +32,19 @@ export default function Lobby({
             <TouchableOpacity
                 style={styles.langButton}
                 onPress={() => setLanguage(l => l === 'fr' ? 'en' : 'fr')}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel={language === 'fr' ? 'Switch to English' : 'Passer en français'}
+                accessibilityHint="Changes the app language"
             >
                 <Text style={styles.langButtonText}>{language === 'fr' ? '🇬🇧 EN' : '🇫🇷 FR'}</Text>
             </TouchableOpacity>
 
-            <View style={styles.themeSelector}>
+            <View
+                style={styles.themeSelector}
+                accessible={false}
+                accessibilityLabel="Theme selector"
+            >
                 {themeKeys.map((themeKey) => (
                     <TouchableOpacity
                         key={themeKey}
@@ -46,16 +54,32 @@ export default function Lobby({
                             currentTheme === themeKey && styles.selectedTheme,
                         ]}
                         onPress={() => setCurrentTheme(themeKey)}
+                        accessible={true}
+                        accessibilityRole="button"
+                        accessibilityLabel={t(themeNames[themeKey])}
+                        accessibilityHint="Changes the app color theme"
+                        accessibilityState={{ selected: currentTheme === themeKey }}
                     >
                         {currentTheme === themeKey && (
-                            <Text style={styles.checkmark}>✓</Text>
+                            <Text style={styles.checkmark} importantForAccessibility="no">✓</Text>
                         )}
                     </TouchableOpacity>
                 ))}
             </View>
 
-            <Text style={styles.title}>{t('title')}</Text>
-            <Text style={{ color: isConnected ? '#4caf50' : '#f44336', marginBottom: 20, fontWeight: 'bold' }}>
+            <Text
+                style={styles.title}
+                accessible={true}
+                accessibilityRole="header"
+            >
+                {t('title')}
+            </Text>
+            <Text
+                style={{ color: isConnected ? '#4caf50' : '#f44336', marginBottom: 20, fontWeight: 'bold' }}
+                accessible={true}
+                accessibilityRole="text"
+                accessibilityLiveRegion="polite"
+            >
                 {isConnected ? t('connectedToServer') : t('disconnected')}
             </Text>
 
@@ -67,8 +91,18 @@ export default function Lobby({
                         placeholderTextColor="#999"
                         value={playerName}
                         onChangeText={setPlayerName}
+                        accessible={true}
+                        accessibilityLabel={t('yourName')}
+                        accessibilityHint="Enter your player name"
                     />
-                    <TouchableOpacity style={[styles.primaryButton, { backgroundColor: theme.accent }]} onPress={createRoom}>
+                    <TouchableOpacity
+                        style={[styles.primaryButton, { backgroundColor: theme.accent }]}
+                        onPress={createRoom}
+                        accessible={true}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('createRoom')}
+                        accessibilityHint="Creates a new game room"
+                    >
                         <Text style={styles.buttonText}>{t('createRoom')}</Text>
                     </TouchableOpacity>
 
@@ -81,20 +115,57 @@ export default function Lobby({
                         value={roomCode}
                         onChangeText={setRoomCode}
                         autoCapitalize="characters"
+                        accessible={true}
+                        accessibilityLabel={t('roomCode')}
+                        accessibilityHint="Enter the room code to join"
                     />
-                    <TouchableOpacity style={[styles.secondaryButton, { backgroundColor: theme.secondary }]} onPress={joinRoom}>
+                    <TouchableOpacity
+                        style={[styles.secondaryButton, { backgroundColor: theme.secondary }]}
+                        onPress={joinRoom}
+                        accessible={true}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('joinRoom')}
+                        accessibilityHint="Joins an existing game room"
+                    >
                         <Text style={styles.buttonText}>{t('joinRoom')}</Text>
                     </TouchableOpacity>
                 </View>
             ) : (
                 <View style={{ width: '100%', alignItems: 'center' }}>
-                    <Text style={[styles.roomCode, { color: theme.accentLight }]}>{t('room')}: {currentRoom}</Text>
-                    <Text style={styles.subtitle}>{t('players')}</Text>
+                    <Text
+                        style={[styles.roomCode, { color: theme.accentLight }]}
+                        accessible={true}
+                        accessibilityRole="text"
+                        accessibilityLabel={`${t('room')}: ${currentRoom}`}
+                    >
+                        {t('room')}: {currentRoom}
+                    </Text>
+                    <Text
+                        style={styles.subtitle}
+                        accessible={true}
+                        accessibilityRole="header"
+                    >
+                        {t('players')}
+                    </Text>
                     {players.map((p, i) => (
-                        <Text key={i} style={styles.player}>{p.name}</Text>
+                        <Text
+                            key={i}
+                            style={styles.player}
+                            accessible={true}
+                            accessibilityRole="text"
+                        >
+                            {p.name}
+                        </Text>
                     ))}
                     <View style={styles.separator} />
-                    <TouchableOpacity style={[styles.primaryButton, { backgroundColor: theme.accent }]} onPress={startGame}>
+                    <TouchableOpacity
+                        style={[styles.primaryButton, { backgroundColor: theme.accent }]}
+                        onPress={startGame}
+                        accessible={true}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('startGame')}
+                        accessibilityHint="Starts the game with current players"
+                    >
                         <Text style={styles.buttonText}>{t('startGame')}</Text>
                     </TouchableOpacity>
                 </View>
