@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Die from './Die';
 import ScoreRow from './ScoreRow';
 import Leaderboard from './Leaderboard';
@@ -61,24 +62,26 @@ export default function Game({
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContent}>
-            <TouchableOpacity
-                style={styles.quitButton}
-                onPress={handleQuitGame}
-                accessible={true}
-                accessibilityRole="button"
-                accessibilityLabel={t('quit')}
-                accessibilityHint="Quits the game and returns to lobby"
-            >
-                <Text style={styles.quitButtonText}>✕ {t('quit')}</Text>
-            </TouchableOpacity>
+            <View style={styles.headerContainer}>
+                <Text
+                    style={styles.title}
+                    accessible={true}
+                    accessibilityRole="header"
+                >
+                    {t('room')}: {currentRoom}
+                </Text>
 
-            <Text
-                style={styles.title}
-                accessible={true}
-                accessibilityRole="header"
-            >
-                {t('room')}: {currentRoom}
-            </Text>
+                <TouchableOpacity
+                    style={styles.headerButton}
+                    onPress={handleQuitGame}
+                    accessible={true}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('quit')}
+                    accessibilityHint="Quits the game and returns to lobby"
+                >
+                    <Ionicons name="close-circle-outline" size={32} color="#fff" />
+                </TouchableOpacity>
+            </View>
 
             <Leaderboard
                 players={players}
@@ -194,12 +197,26 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingBottom: 20,
     },
+    headerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        paddingHorizontal: 20,
+        paddingTop: 10,
+        marginBottom: 10,
+        position: 'relative',
+    },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
         color: '#fff',
-        marginBottom: 10,
         textAlign: 'center',
+    },
+    headerButton: {
+        position: 'absolute',
+        right: 20,
+        top: 10,
     },
     subtitle: {
         fontSize: 16,
@@ -251,20 +268,5 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
         padding: 8,
         borderRadius: 10,
-    },
-    quitButton: {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        backgroundColor: 'rgba(244, 67, 54, 0.9)',
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 20,
-        zIndex: 1000,
-    },
-    quitButtonText: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: 'bold',
     },
 });
