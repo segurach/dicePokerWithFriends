@@ -1,10 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { StyleSheet, View, Alert, Animated, Easing, Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import io from 'socket.io-client';
 import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
+import * as SplashScreen from 'expo-splash-screen';
 import ConfettiCannon from 'react-native-confetti-cannon';
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
 
 // Components
 import Lobby from './components/Lobby';
@@ -229,6 +233,22 @@ export default function App() {
     });
 
     return () => newSocket.disconnect();
+  }, []);
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        // Artificially delay for 2 seconds to simulate a "splash" duration
+        // This ensures the user sees the branding even if the app loads instantly
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        await SplashScreen.hideAsync();
+      }
+    }
+
+    prepare();
   }, []);
 
   const createRoom = () => {
