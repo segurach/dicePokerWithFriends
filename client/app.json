@@ -3,27 +3,48 @@
     "name": "Dice Poker with Friends",
     "slug": "dice-poker-with-friends",
     "version": "1.0.0",
+    "description": "Play dice poker with friends online! Roll the dice, score big, and compete in this fun multiplayer game.",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
+    "primaryColor": "#2e7d32",
+    "backgroundColor": "#2e7d32",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#2e7d32"
     },
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.christophesegura.dicepokerwithfriends",
+      "buildNumber": "1",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "This app does not track you.",
+        "NSPhotoLibraryUsageDescription": "This app does not access your photos.",
+        "NSCameraUsageDescription": "This app does not use your camera."
+      }
     },
     "android": {
+      "package": "com.christophesegura.dicepokerwithfriends",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true
+        "backgroundColor": "#2e7d32"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5ac50223-0a05-4bcf-aa19-01a38976665e"
+      }
+    },
+    "owner": "krystov"
   }
 }
