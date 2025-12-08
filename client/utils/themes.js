@@ -33,7 +33,22 @@ export const themes = {
         secondary: '#FFFFFF',
         accent: '#FFFF00',
         accentLight: '#00FF00',
+        requiredLevel: 1,
+    },
+    legendary: {
+        name: 'Legendary',
+        primary: '#212121',      // Deep Black
+        secondary: '#ffd700',    // Gold
+        accent: '#ffea00',       // Bright Gold
+        accentLight: '#fff176',  // Light Gold
+        requiredLevel: 50,
     },
 };
+
+// Add levels to existing themes
+themes.darkBlue.requiredLevel = 5;
+themes.darkPurple.requiredLevel = 1;
+themes.forestGreen.requiredLevel = 1;
+themes.sunsetOrange.requiredLevel = 1;
 
 export const themeKeys = Object.keys(themes);

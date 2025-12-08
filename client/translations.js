@@ -37,6 +37,18 @@ export const translations = {
         themeGreen: "Green",
         themeSunset: "Sunset",
         themeHighContrast: "High Contrast",
+        themeLegendary: "Legendary",
+        locked: "Locked (Lvl {level})",
+        diceStyle: "Dice Style",
+        skinStandard: "Standard",
+        skinGolden: "Golden",
+
+        // Titles
+        titleNovice: "Novice",
+        titleRoller: "Roller",
+        titleHighRoller: "High Roller",
+        titleMaster: "Master",
+        titleLegend: "Legend",
 
         // Quit Game
         quit: "Quit",
@@ -103,6 +115,18 @@ export const translations = {
         themeGreen: "Vert",
         themeSunset: "Coucher de Soleil",
         themeHighContrast: "Contraste Élevé",
+        themeLegendary: "Légendaire",
+        locked: "Verrouillé (Niv {level})",
+        diceStyle: "Style de Dés",
+        skinStandard: "Standard",
+        skinGolden: "Doré",
+
+        // Titles
+        titleNovice: "Novice",
+        titleRoller: "Joueur",
+        titleHighRoller: "Flambeur",
+        titleMaster: "Maître",
+        titleLegend: "Légende",
 
         // Quit Game
         quit: "Quitter",

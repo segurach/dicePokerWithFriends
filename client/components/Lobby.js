@@ -20,7 +20,9 @@ export default function Lobby({
     startGame,
     players,
     level = 1,
-    totalXP = 0
+    totalXP = 0,
+    currentDiceSkin,
+    setCurrentDiceSkin
 }) {
     const themeNames = {
         darkBlue: 'themeDarkBlue',
@@ -28,11 +30,21 @@ export default function Lobby({
         forestGreen: 'themeGreen',
         sunsetOrange: 'themeSunset',
         highContrast: 'themeHighContrast',
+        legendary: 'themeLegendary',
     };
 
     // XP calculation
     const currentLevelXP = totalXP % 1000;
     const xpProgress = (currentLevelXP / 1000) * 100;
+
+    // Title Logic
+    const getTitle = (lvl) => {
+        if (lvl >= 50) return t('titleLegend');
+        if (lvl >= 20) return t('titleMaster');
+        if (lvl >= 10) return t('titleHighRoller');
+        if (lvl >= 5) return t('titleRoller');
+        return t('titleNovice');
+    };
 
     // Dynamic button text color based on theme
     // Use black text for high contrast and bright accent colors
@@ -60,32 +72,87 @@ export default function Lobby({
             >
                 <Text style={styles.langButtonText}>{language === 'fr' ? '🇬🇧 EN' : '🇫🇷 FR'}</Text>
             </TouchableOpacity>
-
             <View
                 style={styles.themeSelector}
                 accessible={false}
                 accessibilityLabel="Theme selector"
             >
-                {themeKeys.map((themeKey) => (
-                    <TouchableOpacity
-                        key={themeKey}
-                        style={[
-                            styles.themeCircle,
-                            { backgroundColor: themes[themeKey].primary },
-                            currentTheme === themeKey && styles.selectedTheme,
-                        ]}
-                        onPress={() => setCurrentTheme(themeKey)}
-                        accessible={true}
-                        accessibilityRole="button"
-                        accessibilityLabel={t(themeNames[themeKey])}
-                        accessibilityHint="Changes the app color theme"
-                        accessibilityState={{ selected: currentTheme === themeKey }}
-                    >
-                        {currentTheme === themeKey && (
-                            <Text style={styles.checkmark} importantForAccessibility="no">✓</Text>
-                        )}
-                    </TouchableOpacity>
-                ))}
+                {themeKeys.map((themeKey) => {
+                    const themeObj = themes[themeKey];
+                    const isLocked = (themeObj.requiredLevel || 1) > level;
+
+                    return (
+                        <TouchableOpacity
+                            key={themeKey}
+                            style={[
+                                styles.themeCircle,
+                                { backgroundColor: themeObj.primary },
+                                currentTheme === themeKey && styles.selectedTheme,
+                                isLocked && styles.lockedTheme
+                            ]}
+                            onPress={() => {
+                                if (isLocked) {
+                                    alert(t('locked').replace('{level}', themeObj.requiredLevel));
+                                } else {
+                                    setCurrentTheme(themeKey);
+                                }
+                            }}
+                            accessible={true}
+                            accessibilityRole="button"
+                            accessibilityLabel={t(themeNames[themeKey]) + (isLocked ? ` (${t('locked').replace('{level}', themeObj.requiredLevel)})` : '')}
+                            accessibilityHint={isLocked ? "Theme locked" : "Changes the app color theme"}
+                            accessibilityState={{ selected: currentTheme === themeKey, disabled: isLocked }}
+                        >
+                            {currentTheme === themeKey && !isLocked && (
+                                <Text style={styles.checkmark} importantForAccessibility="no">✓</Text>
+                            )}
+                            {isLocked && (
+                                <Text style={styles.lockIcon} importantForAccessibility="no">🔒</Text>
+                            )}
+                        </TouchableOpacity>
+                    );
+                })}
+            </View>
+
+            <View
+                style={styles.skinSelector}
+                accessible={false}
+                accessibilityLabel="Dice skin selector"
+            >
+                <Text style={[styles.sectionLabel, { color: '#fff' }]}>{t('diceStyle')}:</Text>
+                {['standard', 'golden'].map((skin) => {
+                    const isLocked = skin === 'golden' && level < 10;
+                    const skinColor = skin === 'golden' ? '#ffd700' : '#ffffff';
+
+                    return (
+                        <TouchableOpacity
+                            key={skin}
+                            style={[
+                                styles.themeCircle,
+                                { backgroundColor: skinColor },
+                                currentDiceSkin === skin && styles.selectedTheme,
+                                isLocked && styles.lockedTheme
+                            ]}
+                            onPress={() => {
+                                if (isLocked) {
+                                    alert(t('locked').replace('{level}', 10));
+                                } else {
+                                    setCurrentDiceSkin(skin);
+                                }
+                            }}
+                            accessible={true}
+                            accessibilityRole="button"
+                            accessibilityLabel={t(skin === 'standard' ? 'skinStandard' : 'skinGolden')}
+                        >
+                            {currentDiceSkin === skin && !isLocked && (
+                                <Text style={[styles.checkmark, { color: skin === 'standard' ? '#000' : '#fff' }]} importantForAccessibility="no">✓</Text>
+                            )}
+                            {isLocked && (
+                                <Text style={styles.lockIcon} importantForAccessibility="no">🔒</Text>
+                            )}
+                        </TouchableOpacity>
+                    );
+                })}
             </View>
 
             <Text
@@ -98,7 +165,10 @@ export default function Lobby({
 
             {/* XP Profile Section */}
             <View style={styles.profileContainer}>
-                <Text style={styles.levelBadge}>LVL {level}</Text>
+                <View style={{ alignItems: 'center', marginRight: 15 }}>
+                    <Text style={styles.levelBadge}>LVL {level}</Text>
+                    <Text style={styles.playerTitle}>{getTitle(level)}</Text>
+                </View>
                 <View style={styles.xpInfo}>
                     <View style={styles.xpBarBg}>
                         <View style={[styles.xpBarFill, { width: `${xpProgress}%`, backgroundColor: theme.accent }]} />
@@ -116,94 +186,96 @@ export default function Lobby({
                 {isConnected ? t('connectedToServer') : t('disconnected')}
             </Text>
 
-            {!currentRoom ? (
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder={t('yourName')}
-                        placeholderTextColor="#999"
-                        value={playerName}
-                        onChangeText={setPlayerName}
-                        accessible={true}
-                        accessibilityLabel={t('yourName')}
-                        accessibilityHint="Enter your player name"
-                    />
-                    <TouchableOpacity
-                        style={[styles.primaryButton, { backgroundColor: theme.accent }]}
-                        onPress={createRoom}
-                        accessible={true}
-                        accessibilityRole="button"
-                        accessibilityLabel={t('createRoom')}
-                        accessibilityHint="Creates a new game room"
-                    >
-                        <Text style={[styles.buttonText, { color: getButtonTextColor(theme.accent) }]}>{t('createRoom')}</Text>
-                    </TouchableOpacity>
+            {
+                !currentRoom ? (
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder={t('yourName')}
+                            placeholderTextColor="#999"
+                            value={playerName}
+                            onChangeText={setPlayerName}
+                            accessible={true}
+                            accessibilityLabel={t('yourName')}
+                            accessibilityHint="Enter your player name"
+                        />
+                        <TouchableOpacity
+                            style={[styles.primaryButton, { backgroundColor: theme.accent }]}
+                            onPress={createRoom}
+                            accessible={true}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('createRoom')}
+                            accessibilityHint="Creates a new game room"
+                        >
+                            <Text style={[styles.buttonText, { color: getButtonTextColor(theme.accent) }]}>{t('createRoom')}</Text>
+                        </TouchableOpacity>
 
-                    <View style={styles.separator} />
+                        <View style={styles.separator} />
 
-                    <TextInput
-                        style={styles.input}
-                        placeholder={t('roomCode')}
-                        placeholderTextColor="#999"
-                        value={roomCode}
-                        onChangeText={setRoomCode}
-                        autoCapitalize="characters"
-                        accessible={true}
-                        accessibilityLabel={t('roomCode')}
-                        accessibilityHint="Enter the room code to join"
-                    />
-                    <TouchableOpacity
-                        style={[styles.secondaryButton, { backgroundColor: theme.secondary }]}
-                        onPress={joinRoom}
-                        accessible={true}
-                        accessibilityRole="button"
-                        accessibilityLabel={t('joinRoom')}
-                        accessibilityHint="Joins an existing game room"
-                    >
-                        <Text style={[styles.buttonText, { color: getButtonTextColor(theme.secondary) }]}>{t('joinRoom')}</Text>
-                    </TouchableOpacity>
-                </View>
-            ) : (
-                <View style={{ width: '100%', alignItems: 'center' }}>
-                    <Text
-                        style={[styles.roomCode, { color: theme.accentLight }]}
-                        accessible={true}
-                        accessibilityRole="text"
-                        accessibilityLabel={`${t('room')}: ${currentRoom}`}
-                    >
-                        {t('room')}: {currentRoom}
-                    </Text>
-                    <Text
-                        style={styles.subtitle}
-                        accessible={true}
-                        accessibilityRole="header"
-                    >
-                        {t('players')}
-                    </Text>
-                    {players.map((p, i) => (
+                        <TextInput
+                            style={styles.input}
+                            placeholder={t('roomCode')}
+                            placeholderTextColor="#999"
+                            value={roomCode}
+                            onChangeText={setRoomCode}
+                            autoCapitalize="characters"
+                            accessible={true}
+                            accessibilityLabel={t('roomCode')}
+                            accessibilityHint="Enter the room code to join"
+                        />
+                        <TouchableOpacity
+                            style={[styles.secondaryButton, { backgroundColor: theme.secondary }]}
+                            onPress={joinRoom}
+                            accessible={true}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('joinRoom')}
+                            accessibilityHint="Joins an existing game room"
+                        >
+                            <Text style={[styles.buttonText, { color: getButtonTextColor(theme.secondary) }]}>{t('joinRoom')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    <View style={{ width: '100%', alignItems: 'center' }}>
                         <Text
-                            key={i}
-                            style={styles.player}
+                            style={[styles.roomCode, { color: theme.accentLight }]}
                             accessible={true}
                             accessibilityRole="text"
+                            accessibilityLabel={`${t('room')}: ${currentRoom}`}
                         >
-                            {p.name}
+                            {t('room')}: {currentRoom}
                         </Text>
-                    ))}
-                    <View style={styles.separator} />
-                    <TouchableOpacity
-                        style={[styles.primaryButton, { backgroundColor: theme.accent }]}
-                        onPress={startGame}
-                        accessible={true}
-                        accessibilityRole="button"
-                        accessibilityLabel={t('startGame')}
-                        accessibilityHint="Starts the game with current players"
-                    >
-                        <Text style={[styles.buttonText, { color: getButtonTextColor(theme.accent) }]}>{t('startGame')}</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
-        </View>
+                        <Text
+                            style={styles.subtitle}
+                            accessible={true}
+                            accessibilityRole="header"
+                        >
+                            {t('players')}
+                        </Text>
+                        {players.map((p, i) => (
+                            <Text
+                                key={i}
+                                style={styles.player}
+                                accessible={true}
+                                accessibilityRole="text"
+                            >
+                                {p.name}
+                            </Text>
+                        ))}
+                        <View style={styles.separator} />
+                        <TouchableOpacity
+                            style={[styles.primaryButton, { backgroundColor: theme.accent }]}
+                            onPress={startGame}
+                            accessible={true}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('startGame')}
+                            accessibilityHint="Starts the game with current players"
+                        >
+                            <Text style={[styles.buttonText, { color: getButtonTextColor(theme.accent) }]}>{t('startGame')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                )
+            }
+        </View >
     );
 }
 
@@ -233,11 +305,20 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: 'bold',
         fontSize: 14,
-        marginRight: 10,
+        // marginRight: 10, // Removed as it's now in a container with margin
         backgroundColor: 'rgba(255,255,255,0.2)',
         paddingHorizontal: 8,
         paddingVertical: 2,
         borderRadius: 10,
+    },
+    playerTitle: {
+        fontSize: 10,
+        color: '#ffd700',
+        fontWeight: 'bold',
+        marginTop: 2,
+        textShadowColor: 'rgba(0,0,0,0.5)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 1,
     },
     xpInfo: {
         flexDirection: 'column',
@@ -331,19 +412,45 @@ const styles = StyleSheet.create({
         left: 20,
         flexDirection: 'row',
         gap: 10,
+        alignItems: 'center',
+    },
+    skinSelector: {
+        position: 'absolute',
+        top: 90,
+        left: 20,
+        flexDirection: 'row',
+        gap: 10,
+        alignItems: 'center',
+    },
+    sectionLabel: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginRight: 5,
+        textShadowColor: 'rgba(0, 0, 0, 0.5)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
     },
     themeCircle: {
         width: 36,
         height: 36,
         borderRadius: 18,
-        borderWidth: 2,
-        borderColor: 'transparent',
-        alignItems: 'center',
+        marginHorizontal: 5,
         justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: 'white',
+    },
+    lockedTheme: {
+        opacity: 0.5,
+        borderStyle: 'dashed',
     },
     selectedTheme: {
-        borderColor: '#fff',
+        borderColor: '#ffff00', // Yellow selection border
         borderWidth: 3,
+        transform: [{ scale: 1.2 }],
+    },
+    lockIcon: {
+        fontSize: 16,
     },
     checkmark: {
         color: '#fff',

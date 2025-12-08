@@ -1,18 +1,21 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Animated } from 'react-native';
 
-const Die = ({ value, isKept, isEmpty, onPress, disabled, animStyle }) => {
+const Die = ({ value, isKept, isEmpty, onPress, disabled, animStyle, skin = 'standard' }) => {
+    const isGolden = skin === 'golden';
+    const dotStyle = isGolden ? styles.dotWhite : styles.dotBlack;
+
     const getDots = (v) => {
         switch (v) {
-            case 1: return [<View key="c" style={styles.dotCenter} />];
-            case 2: return [<View key="tl" style={styles.dotTL} />, <View key="br" style={styles.dotBR} />];
-            case 3: return [<View key="tl" style={styles.dotTL} />, <View key="c" style={styles.dotCenter} />, <View key="br" style={styles.dotBR} />];
-            case 4: return [<View key="tl" style={styles.dotTL} />, <View key="tr" style={styles.dotTR} />, <View key="bl" style={styles.dotBL} />, <View key="br" style={styles.dotBR} />];
-            case 5: return [<View key="tl" style={styles.dotTL} />, <View key="tr" style={styles.dotTR} />, <View key="c" style={styles.dotCenter} />, <View key="bl" style={styles.dotBL} />, <View key="br" style={styles.dotBR} />];
+            case 1: return [<View key="c" style={[styles.dotCenter, dotStyle]} />];
+            case 2: return [<View key="tl" style={[styles.dotTL, dotStyle]} />, <View key="br" style={[styles.dotBR, dotStyle]} />];
+            case 3: return [<View key="tl" style={[styles.dotTL, dotStyle]} />, <View key="c" style={[styles.dotCenter, dotStyle]} />, <View key="br" style={[styles.dotBR, dotStyle]} />];
+            case 4: return [<View key="tl" style={[styles.dotTL, dotStyle]} />, <View key="tr" style={[styles.dotTR, dotStyle]} />, <View key="bl" style={[styles.dotBL, dotStyle]} />, <View key="br" style={[styles.dotBR, dotStyle]} />];
+            case 5: return [<View key="tl" style={[styles.dotTL, dotStyle]} />, <View key="tr" style={[styles.dotTR, dotStyle]} />, <View key="c" style={[styles.dotCenter, dotStyle]} />, <View key="bl" style={[styles.dotBL, dotStyle]} />, <View key="br" style={[styles.dotBR, dotStyle]} />];
             case 6: return [
-                <View key="tl" style={styles.dotTL} />, <View key="tr" style={styles.dotTR} />,
-                <View key="ml" style={styles.dotML} />, <View key="mr" style={styles.dotMR} />,
-                <View key="bl" style={styles.dotBL} />, <View key="br" style={styles.dotBR} />
+                <View key="tl" style={[styles.dotTL, dotStyle]} />, <View key="tr" style={[styles.dotTR, dotStyle]} />,
+                <View key="ml" style={[styles.dotML, dotStyle]} />, <View key="mr" style={[styles.dotMR, dotStyle]} />,
+                <View key="bl" style={[styles.dotBL, dotStyle]} />, <View key="br" style={[styles.dotBR, dotStyle]} />
             ];
             default: return [];
         }
@@ -40,6 +43,7 @@ const Die = ({ value, isKept, isEmpty, onPress, disabled, animStyle }) => {
         >
             <Animated.View style={[
                 styles.die,
+                isGolden && styles.dieGolden,
                 isKept && styles.dieKept,
                 isEmpty && styles.dieEmpty,
                 animStyle
@@ -72,16 +76,20 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
     },
+    dieGolden: {
+        backgroundColor: '#ffd700', // Gold
+        borderColor: '#b8860b', // Dark Goldenrod
+        borderWidth: 2,
+    },
     dieInner: {
         width: '100%',
         height: '100%',
         position: 'relative',
     },
     dieKept: {
-        backgroundColor: '#b2dfdb', // Light Teal
         borderColor: '#00bfa5', // Teal
-        borderWidth: 3,
-        transform: [{ scale: 0.95 }], // Slight shrink effect
+        borderWidth: 4, // Thicker border for kept
+        transform: [{ scale: 0.95 }],
     },
     dieEmpty: {
         backgroundColor: '#cfd8dc', // Blue Grey
@@ -95,13 +103,17 @@ const styles = StyleSheet.create({
         color: '#757575',
     },
     // Dots
-    dotCenter: { position: 'absolute', top: 23, left: 23, width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
-    dotTL: { position: 'absolute', top: 7, left: 7, width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
-    dotTR: { position: 'absolute', top: 7, right: 7, width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
-    dotML: { position: 'absolute', top: 23, left: 7, width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
-    dotMR: { position: 'absolute', top: 23, right: 7, width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
-    dotBL: { position: 'absolute', bottom: 7, left: 7, width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
-    dotBR: { position: 'absolute', bottom: 7, right: 7, width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
+    dotBlack: { position: 'absolute', width: 10, height: 10, borderRadius: 5, backgroundColor: 'black' },
+    dotWhite: { position: 'absolute', width: 10, height: 10, borderRadius: 5, backgroundColor: 'white' },
+
+    // Dot Positions (reused for both colors)
+    dotCenter: { top: 23, left: 23 },
+    dotTL: { top: 7, left: 7 },
+    dotTR: { top: 7, right: 7 },
+    dotML: { top: 23, left: 7 },
+    dotMR: { top: 23, right: 7 },
+    dotBL: { bottom: 7, left: 7 },
+    dotBR: { bottom: 7, right: 7 },
 });
 
 export default Die;

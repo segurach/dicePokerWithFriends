@@ -20,7 +20,8 @@ export default function Game({
     toggleDie,
     rollDice,
     submitScore,
-    resetGame
+    resetGame,
+    currentDiceSkin = 'standard'
 }) {
     const [selectedPlayer, setSelectedPlayer] = useState(null);
     const [scorecardVisible, setScorecardVisible] = useState(false);

@@ -22,8 +22,8 @@ import { themes } from './utils/themes';
 
 // REPLACE WITH YOUR LOCAL IP ADDRESS (e.g., 'http://192.168.1.15:3000')
 // 'localhost' only works on iOS Simulator, NOT on Android Emulator or physical devices.
-const SERVER_URL = 'http://192.168.1.20:3000';
-//const SERVER_URL = 'https://dicepokerwithfriends.onrender.com';
+// const SERVER_URL = 'http://192.168.1.20:3000';
+const SERVER_URL = 'https://dicepokerwithfriends.onrender.com';
 
 export default function App() {
   const [socket, setSocket] = useState(null);
@@ -56,7 +56,7 @@ export default function App() {
   const t = (key) => translations[language][key];
 
   // Theme state
-  const [currentTheme, setCurrentTheme] = useState('darkBlue');
+  const [currentTheme, setCurrentTheme] = useState('forestGreen');
   const theme = themes[currentTheme];
 
   // XP & Level State
@@ -64,7 +64,10 @@ export default function App() {
   const [level, setLevel] = useState(1);
   const [xpGainedLastGame, setXpGainedLastGame] = useState(0);
 
-  // Load saved data (Theme, Language, XP)
+  // Rewards State
+  const [currentDiceSkin, setCurrentDiceSkin] = useState('standard'); // standard, golden
+
+  // Load saved data (Theme, Language, XP, Skin)
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -76,9 +79,11 @@ export default function App() {
 
         const savedXP = await AsyncStorage.getItem('totalXP');
         const savedLevel = await AsyncStorage.getItem('level');
+        const savedSkin = await AsyncStorage.getItem('diceSkin');
 
         if (savedXP) setTotalXP(parseInt(savedXP));
         if (savedLevel) setLevel(parseInt(savedLevel));
+        if (savedSkin) setCurrentDiceSkin(savedSkin);
       } catch (e) {
         console.error('Failed to load data', e);
       } finally {
@@ -376,6 +381,15 @@ export default function App() {
     );
   };
 
+  const saveSkin = async (skin) => {
+    try {
+      setCurrentDiceSkin(skin);
+      await AsyncStorage.setItem('diceSkin', skin);
+    } catch (e) {
+      console.error('Failed to save skin', e);
+    }
+  };
+
   const playAgain = () => {
     socket.emit('start_game', currentRoom);
   };
@@ -393,6 +407,8 @@ export default function App() {
           setLanguage={setLanguage}
           currentTheme={currentTheme}
           setCurrentTheme={setCurrentTheme}
+          currentDiceSkin={currentDiceSkin}
+          setCurrentDiceSkin={saveSkin}
           theme={theme}
           t={t}
           isConnected={isConnected}
@@ -425,6 +441,7 @@ export default function App() {
           rollDice={rollDice}
           submitScore={submitScore}
           resetGame={leaveGame}
+          currentDiceSkin={currentDiceSkin}
         />
       )}
 

@@ -5,6 +5,7 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors());
+app.use(express.static('public'));
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -277,37 +278,6 @@ io.on('connection', (socket) => {
 
                     // Reset dice for current player
                     room.dice = [0, 0, 0, 0, 0];
-                    room.rollsLeft = 3;
-
-                    // Check if only one player remains
-                    if (room.players.length === 1) {
-                        // End game, remaining player wins
-                        const winner = room.players[0];
-
-                        // Calculate XP (Base + Win bonus)
-                        const playerWithXp = {
-                            ...winner,
-                            xpGained: 150, // 50 base + 100 win
-                            xpDetails: ['Forfeit Win (+150 XP) 🏆']
-                        };
-
-                        io.to(roomCode).emit('game_over', {
-                            players: [playerWithXp],
-                            winner: winner
-                        });
-                        room.gameStarted = false;
-                    } else {
-                        // Notify remaining players
-                        io.to(roomCode).emit('player_left', {
-                            playerName: leavingPlayer.name,
-                            players: room.players,
-                            currentTurn: room.players[room.currentTurn].id,
-                            dice: room.dice,
-                            rollsLeft: room.rollsLeft
-                        });
-                    }
-                } else {
-                    // Game not started, just update player list
                     io.to(roomCode).emit('player_left', {
                         playerName: leavingPlayer.name,
                         players: room.players
