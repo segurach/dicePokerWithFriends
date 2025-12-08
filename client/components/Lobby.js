@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, ScrollView, SafeAreaView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { themes, themeKeys } from '../utils/themes';
 
 export default function Lobby({
@@ -58,102 +59,24 @@ export default function Lobby({
 
         // Default: white text
         return '#FFFFFF';
+        // Default: white text
+        return '#FFFFFF';
     };
+
+    const [showSettings, setShowSettings] = useState(false);
 
     return (
         <View style={styles.centerContent}>
             <TouchableOpacity
-                style={styles.langButton}
-                onPress={() => setLanguage(l => l === 'fr' ? 'en' : 'fr')}
+                style={styles.settingsButton}
+                onPress={() => setShowSettings(true)}
                 accessible={true}
                 accessibilityRole="button"
-                accessibilityLabel={language === 'fr' ? 'Switch to English' : 'Passer en français'}
-                accessibilityHint="Changes the app language"
+                accessibilityLabel="Settings"
+                accessibilityHint="Opens customization menu"
             >
-                <Text style={styles.langButtonText}>{language === 'fr' ? '🇬🇧 EN' : '🇫🇷 FR'}</Text>
+                <Ionicons name="settings-outline" size={30} color="#fff" />
             </TouchableOpacity>
-            <View
-                style={styles.themeSelector}
-                accessible={false}
-                accessibilityLabel="Theme selector"
-            >
-                {themeKeys.map((themeKey) => {
-                    const themeObj = themes[themeKey];
-                    const isLocked = (themeObj.requiredLevel || 1) > level;
-
-                    return (
-                        <TouchableOpacity
-                            key={themeKey}
-                            style={[
-                                styles.themeCircle,
-                                { backgroundColor: themeObj.primary },
-                                currentTheme === themeKey && styles.selectedTheme,
-                                isLocked && styles.lockedTheme
-                            ]}
-                            onPress={() => {
-                                if (isLocked) {
-                                    alert(t('locked').replace('{level}', themeObj.requiredLevel));
-                                } else {
-                                    setCurrentTheme(themeKey);
-                                }
-                            }}
-                            accessible={true}
-                            accessibilityRole="button"
-                            accessibilityLabel={t(themeNames[themeKey]) + (isLocked ? ` (${t('locked').replace('{level}', themeObj.requiredLevel)})` : '')}
-                            accessibilityHint={isLocked ? "Theme locked" : "Changes the app color theme"}
-                            accessibilityState={{ selected: currentTheme === themeKey, disabled: isLocked }}
-                        >
-                            {currentTheme === themeKey && !isLocked && (
-                                <Text style={styles.checkmark} importantForAccessibility="no">✓</Text>
-                            )}
-                            {isLocked && (
-                                <Text style={styles.lockIcon} importantForAccessibility="no">🔒</Text>
-                            )}
-                        </TouchableOpacity>
-                    );
-                })}
-            </View>
-
-            <View
-                style={styles.skinSelector}
-                accessible={false}
-                accessibilityLabel="Dice skin selector"
-            >
-                <Text style={[styles.sectionLabel, { color: '#fff' }]}>{t('diceStyle')}:</Text>
-                {['standard', 'golden'].map((skin) => {
-                    const isLocked = skin === 'golden' && level < 10;
-                    const skinColor = skin === 'golden' ? '#ffd700' : '#ffffff';
-
-                    return (
-                        <TouchableOpacity
-                            key={skin}
-                            style={[
-                                styles.themeCircle,
-                                { backgroundColor: skinColor },
-                                currentDiceSkin === skin && styles.selectedTheme,
-                                isLocked && styles.lockedTheme
-                            ]}
-                            onPress={() => {
-                                if (isLocked) {
-                                    alert(t('locked').replace('{level}', 10));
-                                } else {
-                                    setCurrentDiceSkin(skin);
-                                }
-                            }}
-                            accessible={true}
-                            accessibilityRole="button"
-                            accessibilityLabel={t(skin === 'standard' ? 'skinStandard' : 'skinGolden')}
-                        >
-                            {currentDiceSkin === skin && !isLocked && (
-                                <Text style={[styles.checkmark, { color: skin === 'standard' ? '#000' : '#fff' }]} importantForAccessibility="no">✓</Text>
-                            )}
-                            {isLocked && (
-                                <Text style={styles.lockIcon} importantForAccessibility="no">🔒</Text>
-                            )}
-                        </TouchableOpacity>
-                    );
-                })}
-            </View>
 
             <Text
                 style={styles.title}
@@ -275,6 +198,92 @@ export default function Lobby({
                     </View>
                 )
             }
+            <Modal
+                visible={showSettings}
+                animationType="fade"
+                transparent={true}
+                onRequestClose={() => setShowSettings(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={[styles.modalContent, { backgroundColor: theme.primary }]}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>{t('settings') || "Settings"}</Text>
+                            <TouchableOpacity onPress={() => setShowSettings(false)}>
+                                <Ionicons name="close" size={28} color="#fff" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <ScrollView contentContainerStyle={styles.modalBody}>
+                            {/* Language */}
+                            <Text style={styles.sectionLabel}>{t('language') || "Language"}:</Text>
+                            <TouchableOpacity
+                                style={styles.modalLangButton}
+                                onPress={() => setLanguage(l => l === 'fr' ? 'en' : 'fr')}
+                            >
+                                <Text style={styles.langButtonText}>{language === 'fr' ? '🇬🇧 English' : '🇫🇷 Français'}</Text>
+                            </TouchableOpacity>
+
+                            <View style={styles.separator} />
+
+                            {/* Dice Skins */}
+                            <Text style={styles.sectionLabel}>{t('diceStyle')}:</Text>
+                            <View style={styles.modalSkinRow}>
+                                {['standard', 'golden'].map((skin) => {
+                                    const isLocked = skin === 'golden' && level < 10;
+                                    const skinColor = skin === 'golden' ? '#ffd700' : '#ffffff';
+                                    return (
+                                        <TouchableOpacity
+                                            key={skin}
+                                            style={[
+                                                styles.themeCircle,
+                                                { backgroundColor: skinColor },
+                                                currentDiceSkin === skin && styles.selectedTheme,
+                                                isLocked && styles.lockedTheme
+                                            ]}
+                                            onPress={() => {
+                                                if (isLocked) alert(t('locked').replace('{level}', 10));
+                                                else setCurrentDiceSkin(skin);
+                                            }}
+                                        >
+                                            {currentDiceSkin === skin && !isLocked && <Text style={[styles.checkmark, { color: skin === 'standard' ? '#000' : '#fff' }]}>✓</Text>}
+                                            {isLocked && <Text style={styles.lockIcon}>🔒</Text>}
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+
+                            <View style={styles.separator} />
+
+                            {/* Themes */}
+                            <Text style={styles.sectionLabel}>{t('theme') || "Theme"}:</Text>
+                            <View style={styles.modalThemeGrid}>
+                                {themeKeys.map((themeKey) => {
+                                    const themeObj = themes[themeKey];
+                                    const isLocked = (themeObj.requiredLevel || 1) > level;
+                                    return (
+                                        <TouchableOpacity
+                                            key={themeKey}
+                                            style={[
+                                                styles.themeCircle,
+                                                { backgroundColor: themeObj.primary, marginBottom: 10 },
+                                                currentTheme === themeKey && styles.selectedTheme,
+                                                isLocked && styles.lockedTheme
+                                            ]}
+                                            onPress={() => {
+                                                if (isLocked) alert(t('locked').replace('{level}', themeObj.requiredLevel));
+                                                else setCurrentTheme(themeKey);
+                                            }}
+                                        >
+                                            {currentTheme === themeKey && !isLocked && <Text style={styles.checkmark}>✓</Text>}
+                                            {isLocked && <Text style={styles.lockIcon}>🔒</Text>}
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
         </View >
     );
 }
@@ -369,7 +378,8 @@ const styles = StyleSheet.create({
         padding: 15,
         marginBottom: 15,
         borderRadius: 8,
-        fontSize: 16,
+        fontSize: 20,
+        fontWeight: 'bold',
     },
     separator: {
         height: 30,
@@ -394,67 +404,93 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
     },
-    langButton: {
+    // Modal Styles
+    settingsButton: {
         position: 'absolute',
         top: 40,
         right: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
         padding: 8,
+        backgroundColor: 'rgba(255,255,255,0.2)',
         borderRadius: 20,
+        zIndex: 10,
     },
-    langButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-    },
-    themeSelector: {
-        position: 'absolute',
-        top: 40,
-        left: 20,
-        flexDirection: 'row',
-        gap: 10,
-        alignItems: 'center',
-    },
-    skinSelector: {
-        position: 'absolute',
-        top: 90,
-        left: 20,
-        flexDirection: 'row',
-        gap: 10,
-        alignItems: 'center',
-    },
-    sectionLabel: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        marginRight: 5,
-        textShadowColor: 'rgba(0, 0, 0, 0.5)',
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
-    },
-    themeCircle: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        marginHorizontal: 5,
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.7)',
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    modalContent: {
+        width: '90%',
+        maxHeight: '80%',
+        borderRadius: 20,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.3)',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    sectionLabel: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#fff',
+        marginBottom: 10,
+        marginTop: 10,
+    },
+    modalLangButton: {
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        padding: 15,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    modalSkinRow: {
+        flexDirection: 'row',
+        gap: 15,
+        marginBottom: 10,
+    },
+    modalThemeGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 15,
+        justifyContent: 'center',
+    },
+    themeCircle: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
         borderWidth: 2,
-        borderColor: 'white',
+        borderColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    selectedTheme: {
+        borderColor: '#00ff00',
+        borderWidth: 3,
+        transform: [{ scale: 1.1 }],
     },
     lockedTheme: {
         opacity: 0.5,
-        borderStyle: 'dashed',
-    },
-    selectedTheme: {
-        borderColor: '#ffff00', // Yellow selection border
-        borderWidth: 3,
-        transform: [{ scale: 1.2 }],
-    },
-    lockIcon: {
-        fontSize: 16,
     },
     checkmark: {
         color: '#fff',
+        fontWeight: 'bold',
         fontSize: 20,
+    },
+    lockIcon: {
+        fontSize: 20,
+    },
+    langButtonText: {
+        color: '#fff',
+        fontSize: 18,
         fontWeight: 'bold',
     },
 });
