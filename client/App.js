@@ -22,7 +22,8 @@ import { themes } from './utils/themes';
 
 // REPLACE WITH YOUR LOCAL IP ADDRESS (e.g., 'http://192.168.1.15:3000')
 // 'localhost' only works on iOS Simulator, NOT on Android Emulator or physical devices.
-const SERVER_URL = 'https://dicepokerwithfriends.onrender.com';
+const SERVER_URL = 'http://192.168.1.20:3000';
+//const SERVER_URL = 'https://dicepokerwithfriends.onrender.com';
 
 export default function App() {
   const [socket, setSocket] = useState(null);
@@ -57,6 +58,44 @@ export default function App() {
   // Theme state
   const [currentTheme, setCurrentTheme] = useState('darkBlue');
   const theme = themes[currentTheme];
+
+  // XP & Level State
+  const [totalXP, setTotalXP] = useState(0);
+  const [level, setLevel] = useState(1);
+  const [xpGainedLastGame, setXpGainedLastGame] = useState(0);
+
+  // Load saved data (Theme, Language, XP)
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const savedTheme = await AsyncStorage.getItem('theme');
+        if (savedTheme) setCurrentTheme(savedTheme);
+
+        const savedLang = await AsyncStorage.getItem('language');
+        if (savedLang) setLanguage(savedLang);
+
+        const savedXP = await AsyncStorage.getItem('totalXP');
+        const savedLevel = await AsyncStorage.getItem('level');
+
+        if (savedXP) setTotalXP(parseInt(savedXP));
+        if (savedLevel) setLevel(parseInt(savedLevel));
+      } catch (e) {
+        console.error('Failed to load data', e);
+      } finally {
+        SplashScreen.hideAsync();
+      }
+    };
+    loadData();
+  }, []);
+
+  const saveXP = async (newXP, newLevel) => {
+    try {
+      await AsyncStorage.setItem('totalXP', newXP.toString());
+      await AsyncStorage.setItem('level', newLevel.toString());
+    } catch (e) {
+      console.error('Failed to save XP', e);
+    }
+  };
 
   // Animation values
   const diceAnimValues = useRef([0, 0, 0, 0, 0].map(() => new Animated.Value(0))).current;
@@ -212,6 +251,30 @@ export default function App() {
       setGameState('finished');
       playSound('game_over');
       if (confettiRef.current) confettiRef.current.start();
+
+      // Find my player to get XP data
+      const myPlayer = players.find(p => p.id === newSocket.id);
+      if (myPlayer && myPlayer.xpGained) {
+        setXpGainedLastGame(myPlayer.xpGained);
+
+        // Update local total safely using functional state update
+        setTotalXP(prevXP => {
+          const newTotal = prevXP + myPlayer.xpGained;
+          const newLevel = Math.floor(newTotal / 1000) + 1;
+
+          setLevel(prevLevel => {
+            if (newLevel > prevLevel) {
+              // Level Up! Could trigger a special animation sound here
+              Alert.alert("LEVEL UP! 🎉", `Congratulations! You reached Level ${newLevel}!`);
+            }
+            // Save to storage
+            saveXP(newTotal, newLevel);
+            return newLevel;
+          });
+
+          return newTotal;
+        });
+      }
     });
 
     newSocket.on('player_left', ({ playerName, players, currentTurn, dice, rollsLeft }) => {
@@ -342,6 +405,8 @@ export default function App() {
           joinRoom={joinRoom}
           startGame={startGame}
           players={players}
+          level={level}
+          totalXP={totalXP}
         />
       )}
 
@@ -370,6 +435,8 @@ export default function App() {
           resetGame={resetGame}
           playAgain={playAgain}
           currentTheme={currentTheme}
+          myId={myId}
+          xpGainedLastGame={xpGainedLastGame}
         />
       )}
 

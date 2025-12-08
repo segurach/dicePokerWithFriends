@@ -18,7 +18,9 @@ export default function Lobby({
     createRoom,
     joinRoom,
     startGame,
-    players
+    players,
+    level = 1,
+    totalXP = 0
 }) {
     const themeNames = {
         darkBlue: 'themeDarkBlue',
@@ -27,6 +29,10 @@ export default function Lobby({
         sunsetOrange: 'themeSunset',
         highContrast: 'themeHighContrast',
     };
+
+    // XP calculation
+    const currentLevelXP = totalXP % 1000;
+    const xpProgress = (currentLevelXP / 1000) * 100;
 
     // Dynamic button text color based on theme
     // Use black text for high contrast and bright accent colors
@@ -89,6 +95,18 @@ export default function Lobby({
             >
                 {t('title')}
             </Text>
+
+            {/* XP Profile Section */}
+            <View style={styles.profileContainer}>
+                <Text style={styles.levelBadge}>LVL {level}</Text>
+                <View style={styles.xpInfo}>
+                    <View style={styles.xpBarBg}>
+                        <View style={[styles.xpBarFill, { width: `${xpProgress}%`, backgroundColor: theme.accent }]} />
+                    </View>
+                    <Text style={styles.xpText}>{currentLevelXP} / 1000 XP</Text>
+                </View>
+            </View>
+
             <Text
                 style={{ color: isConnected ? '#4caf50' : '#f44336', marginBottom: 20, fontWeight: 'bold' }}
                 accessible={true}
@@ -202,6 +220,44 @@ const styles = StyleSheet.create({
         color: '#fff',
         marginBottom: 20,
         textAlign: 'center',
+    },
+    profileContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        padding: 8,
+        borderRadius: 20,
+        marginBottom: 20,
+    },
+    levelBadge: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 14,
+        marginRight: 10,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 10,
+    },
+    xpInfo: {
+        flexDirection: 'column',
+    },
+    xpBarBg: {
+        width: 150,
+        height: 8,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 4,
+        overflow: 'hidden',
+    },
+    xpBarFill: {
+        height: '100%',
+        borderRadius: 4,
+    },
+    xpText: {
+        color: '#ccc',
+        fontSize: 10,
+        textAlign: 'center',
+        marginTop: 2,
     },
     subtitle: {
         fontSize: 18,

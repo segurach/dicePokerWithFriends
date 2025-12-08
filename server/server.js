@@ -201,8 +201,34 @@ io.on('connection', (socket) => {
                     (prev.score > current.score) ? prev : current
                 );
 
+                // Calculate XP for each player
+                const playersWithXp = room.players.map(p => {
+                    let xpGained = 50; // Base participation XP
+                    let xpDetails = ['Participation (+50 XP)'];
+
+                    // Win bonus
+                    if (p.id === winner.id) {
+                        xpGained += 100;
+                        xpDetails.push('Winner Bonus (+100 XP) 🏆');
+                    }
+
+                    // High score bonus
+                    if (p.score >= 200) {
+                        xpGained += 50;
+                        xpDetails.push('High Score > 200 (+50 XP) 🎯');
+                    }
+
+                    // Yahtzee bonus (check if they got a Yahtzee/Five of a Kind)
+                    if (p.scorecard && p.scorecard['yahtzee'] === 50) {
+                        xpGained += 50;
+                        xpDetails.push('Five of a Kind (+50 XP) 🎲');
+                    }
+
+                    return { ...p, xpGained, xpDetails };
+                });
+
                 io.to(roomCode).emit('game_over', {
-                    players: room.players,
+                    players: playersWithXp,
                     winner: winner
                 });
             } else {
@@ -256,9 +282,18 @@ io.on('connection', (socket) => {
                     // Check if only one player remains
                     if (room.players.length === 1) {
                         // End game, remaining player wins
+                        const winner = room.players[0];
+
+                        // Calculate XP (Base + Win bonus)
+                        const playerWithXp = {
+                            ...winner,
+                            xpGained: 150, // 50 base + 100 win
+                            xpDetails: ['Forfeit Win (+150 XP) 🏆']
+                        };
+
                         io.to(roomCode).emit('game_over', {
-                            players: room.players,
-                            winner: room.players[0]
+                            players: [playerWithXp],
+                            winner: winner
                         });
                         room.gameStarted = false;
                     } else {
