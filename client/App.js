@@ -23,8 +23,8 @@ import { themes } from './utils/themes';
 
 // REPLACE WITH YOUR LOCAL IP ADDRESS (e.g., 'http://192.168.1.15:3000')
 // 'localhost' only works on iOS Simulator, NOT on Android Emulator or physical devices.
-// const SERVER_URL = 'http://192.168.1.20:3000';
-const SERVER_URL = 'https://dicepokerwithfriends.onrender.com';
+const SERVER_URL = 'http://192.168.1.20:3000';
+//const SERVER_URL = 'https://dicepokerwithfriends.onrender.com';
 
 export default function App() {
   const [socket, setSocket] = useState(null);
@@ -157,8 +157,12 @@ export default function App() {
 
       if (type === 'roll') {
         soundFile = require('./assets/dice-roll.mp3');
-      } else if (type === 'score' || type === 'game_over') {
+      } else if (type === 'score') {
         soundFile = require('./assets/score.wav');
+      } else if (type === 'bonus' || type === 'yahtzee') {
+        soundFile = require('./assets/casino.mp3');
+      } else if (type === 'success' || type === 'game_over') {
+        soundFile = require('./assets/success.mp3');
       }
 
       if (soundFile) {
@@ -286,7 +290,8 @@ export default function App() {
     newSocket.on('game_over', ({ players, winner }) => {
       setPlayers(players);
       setGameState('finished');
-      playSound('game_over');
+      setGameState('finished');
+      playSound('success');
       if (confettiRef.current) confettiRef.current.start();
 
       // Find my player to get XP data
@@ -404,6 +409,7 @@ export default function App() {
         // Check for Yahtzee Animation
         if (category === 'yahtzee' && potentialScore === 50) {
           if (confettiRef.current) confettiRef.current.start();
+          playSound('yahtzee');
         }
 
         // Check for Bonus Animation (Upper Section >= 63)
@@ -420,6 +426,7 @@ export default function App() {
           // If we weren't at 63 yet, and this move puts us over
           if (currentUpperSum < 63 && (currentUpperSum + potentialScore) >= 63) {
             if (confettiRef.current) confettiRef.current.start();
+            playSound('bonus');
             // Optional: Show a "Bonus Unlocked" modal after a slight delay
             setTimeout(() => {
               showModal("BONUS! 🌟", "+35 Points!", 'success');
