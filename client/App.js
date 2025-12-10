@@ -296,9 +296,11 @@ export default function App() {
     newSocket.on('game_over', ({ players, winner }) => {
       setPlayers(players);
       setGameState('finished');
-      setGameState('finished');
-      playSound('success');
-      if (confettiRef.current) confettiRef.current.start();
+
+      if (winner && winner.id === newSocket.id) {
+        playSound('success');
+        if (confettiRef.current) confettiRef.current.start();
+      }
 
       // Find my player to get XP data
       const myPlayer = players.find(p => p.id === newSocket.id);
