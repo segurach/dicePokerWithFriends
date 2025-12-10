@@ -25,8 +25,8 @@ import { themes } from './utils/themes';
 
 // REPLACE WITH YOUR LOCAL IP ADDRESS (e.g., 'http://192.168.1.15:3000')
 // 'localhost' only works on iOS Simulator, NOT on Android Emulator or physical devices.
-const SERVER_URL = 'http://192.168.1.20:3000';
-// const SERVER_URL = 'https://dicepokerwithfriends.onrender.com';
+//const SERVER_URL = 'http://192.168.1.20:3000';
+const SERVER_URL = 'https://dicepokerwithfriends.onrender.com';
 
 export default function App() {
   const [socket, setSocket] = useState(null);
