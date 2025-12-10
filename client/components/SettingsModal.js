@@ -80,7 +80,7 @@ export default function SettingsModal({
                                             isLocked && styles.lockedTheme
                                         ]}
                                         onPress={() => {
-                                            if (isLocked) showModal(t('locked'), t('locked').replace('{level}', 10), 'error');
+                                            if (isLocked) showModal(t('lockedTitle'), t('lockedMessage').replace('{level}', 10), 'error');
                                             else setCurrentDiceSkin(skin);
                                         }}
                                     >
@@ -109,7 +109,7 @@ export default function SettingsModal({
                                             isLocked && styles.lockedTheme
                                         ]}
                                         onPress={() => {
-                                            if (isLocked) showModal(t('locked'), t('locked').replace('{level}', themeObj.requiredLevel), 'error');
+                                            if (isLocked) showModal(t('lockedTitle'), t('lockedMessage').replace('{level}', themeObj.requiredLevel), 'error');
                                             else setCurrentTheme(themeKey);
                                         }}
                                     >
