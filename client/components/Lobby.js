@@ -21,6 +21,7 @@ export default function Lobby({
     createRoom,
     createBotGame,
     joinRoom,
+    leaveGame,
     startGame,
     players,
     level = 1,
@@ -223,6 +224,17 @@ export default function Lobby({
                             accessibilityHint="Starts the game with current players"
                         >
                             <Text style={[styles.buttonText, { color: getButtonTextColor(theme.accent) }]}>{t('startGame')}</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.secondaryButton, { backgroundColor: theme.error || '#d32f2f', marginTop: 10 }]}
+                            onPress={leaveGame}
+                            accessible={true}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('leaveRoom')}
+                            accessibilityHint="Leaves the current room and returns to lobby"
+                        >
+                            <Text style={[styles.buttonText, { color: '#fff' }]}>{t('leaveRoom')}</Text>
                         </TouchableOpacity>
 
 

@@ -137,6 +137,9 @@ export const translations = {
         error: "Erreur",
         enterNameFirst: "Entrez un pseudo d'abord",
         enterNameAndCode: "Entrez un pseudo et un code",
+        waitingForPlayersTitle: "En attente de joueurs",
+        waitingForPlayersMessage: "Vous ne pouvez pas lancer une partie tout seul ! Attendez qu'un autre joueur rejoigne la salle.",
+        leaveRoom: "Quitter la Salle",
         playVsBot: "Jouer contre l'ORDI 🤖",
 
         // Game

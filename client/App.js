@@ -383,6 +383,13 @@ export default function App() {
   };
 
   const startGame = () => {
+    if (players.length < 2) {
+      return showModal(
+        t('waitingForPlayersTitle'),
+        t('waitingForPlayersMessage'),
+        'info'
+      );
+    }
     socket.emit('start_game', currentRoom);
   };
 
@@ -525,6 +532,7 @@ export default function App() {
           createRoom={createRoom}
           createBotGame={createBotGame}
           joinRoom={joinRoom}
+          leaveGame={leaveGame}
           startGame={startGame}
           players={players}
           level={level}
