@@ -110,6 +110,16 @@ export const translations = {
         victory: "Victory",
         highScore: "Score > 200",
         levelUpTip: "Tip: Reach Level 10 for Golden Dice!",
+
+        // Ads
+        adWatching: "Watching Ad...",
+        adWait: "Reward in",
+        adPlaceholder: "Simulated Ad Content",
+        adThankYou: "Thank you for supporting us!",
+        supportDev: "Support Developer",
+        doubleXP: "Double XP",
+        videoAd: "Video Ad",
+        close: "Close",
     },
     fr: {
         // Lobby
@@ -222,5 +232,15 @@ export const translations = {
         victory: "Victoire",
         highScore: "Score > 200",
         levelUpTip: "Astuce : Atteignez le niveau 10 pour les dés dorés !",
+
+        // Ads
+        adWatching: "Lecture de la publicité...",
+        adWait: "Récompense dans",
+        adPlaceholder: "Publicité Simulée",
+        adThankYou: "Merci de nous soutenir !",
+        supportDev: "Soutenir le Dev",
+        doubleXP: "Doubler l'XP",
+        videoAd: "Vidéo Pub",
+        close: "Fermer",
     }
 };

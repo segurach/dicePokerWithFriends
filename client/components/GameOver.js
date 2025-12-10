@@ -1,8 +1,12 @@
-import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import AdModal from './AdModal';
 
-export default function GameOver({ t, players, resetGame, playAgain, currentTheme, myId }) {
+export default function GameOver({ t, players, resetGame, playAgain, currentTheme, myId, onDoubleXP }) {
     const sortedPlayers = players.sort((a, b) => b.score - a.score);
+    const [showAd, setShowAd] = useState(false);
+    const [xpDoubled, setXpDoubled] = useState(false);
 
     // Dynamic button text color for high contrast
     const buttonTextColor = currentTheme === 'highContrast' ? '#000000' : '#FFFFFF';
@@ -30,8 +34,18 @@ export default function GameOver({ t, players, resetGame, playAgain, currentThem
                         <Text key={index} style={styles.xpDetailText}>{detail}</Text>
                     ))}
                     <View style={styles.xpTotalContainer}>
-                        <Text style={styles.xpTotalText}>+{xpGained} XP</Text>
+                        <Text style={styles.xpTotalText}>+{xpDoubled ? xpGained * 2 : xpGained} XP</Text>
                     </View>
+
+                    {!xpDoubled && (
+                        <TouchableOpacity
+                            style={styles.doubleXpButton}
+                            onPress={() => setShowAd(true)}
+                        >
+                            <Ionicons name="videocam" size={20} color="#fff" style={{ marginRight: 8 }} />
+                            <Text style={styles.doubleXpText}>{t('doubleXP')}</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
             )}
 
@@ -75,7 +89,17 @@ export default function GameOver({ t, players, resetGame, playAgain, currentThem
             >
                 <Text style={[styles.buttonText, { color: buttonTextColor }]}>{t('backToLobby')}</Text>
             </TouchableOpacity>
-        </View>
+
+            <AdModal
+                visible={showAd}
+                onClose={() => setShowAd(false)}
+                onReward={() => {
+                    onDoubleXP();
+                    setXpDoubled(true);
+                }}
+                t={t}
+            />
+        </View >
     );
 }
 
@@ -159,4 +183,19 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
     },
+    doubleXpButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#9c27b0', // Purple
+        paddingVertical: 8,
+        paddingHorizontal: 15,
+        borderRadius: 20,
+        marginTop: 15,
+        elevation: 3,
+    },
+    doubleXpText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 14,
+    }
 });

@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, ScrollView,
 import { Ionicons } from '@expo/vector-icons';
 import { themes, themeKeys } from '../utils/themes';
 import PlayerGuide from './PlayerGuide';
+import AdModal from './AdModal';
 
 export default function Lobby({
     language,
@@ -67,6 +68,11 @@ export default function Lobby({
 
     const [showSettings, setShowSettings] = useState(false);
     const [showGuide, setShowGuide] = useState(false);
+    const [showAd, setShowAd] = useState(false);
+
+    const handleAdReward = () => {
+        // Just a thank you in the modal is enough for now
+    };
 
     return (
         <View style={styles.centerContent}>
@@ -206,6 +212,15 @@ export default function Lobby({
                         >
                             <Text style={[styles.buttonText, { color: getButtonTextColor(theme.accent) }]}>{t('startGame')}</Text>
                         </TouchableOpacity>
+
+
+                        <TouchableOpacity
+                            style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, padding: 10 }}
+                            onPress={() => setShowAd(true)}
+                        >
+                            <Ionicons name="heart" size={20} color="#ff4081" style={{ marginRight: 5 }} />
+                            <Text style={{ color: '#aaa', textDecorationLine: 'underline' }}>{t('supportDev')}</Text>
+                        </TouchableOpacity>
                     </View>
                 )
             }
@@ -300,6 +315,13 @@ export default function Lobby({
                 visible={showGuide}
                 onClose={() => setShowGuide(false)}
                 theme={theme}
+                t={t}
+            />
+
+            <AdModal
+                visible={showAd}
+                onClose={() => setShowAd(false)}
+                onReward={handleAdReward}
                 t={t}
             />
         </View >

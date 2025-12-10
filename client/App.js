@@ -460,6 +460,33 @@ export default function App() {
     resetGame(); // Then reset local state
   };
 
+  const handleDoubleXP = () => {
+    setTotalXP(prevXP => {
+      // Add the XP gained last game again (effectively doubling it)
+      const additionalXP = xpGainedLastGame;
+      const newTotal = prevXP + additionalXP;
+      const newLevel = Math.floor(newTotal / 1000) + 1;
+
+      // Check for level up again (rare but possible)
+      setLevel(prevLevel => {
+        if (newLevel > prevLevel) {
+          showModal("LEVEL UP! 🎉", `Double XP pushed you to Level ${newLevel}!`, 'success');
+        }
+        // Save to storage
+        saveXP(newTotal, newLevel);
+        return newLevel;
+      });
+
+      // Save if no level change (level change block handles save otherwise)
+      if (newLevel === level) {
+        saveXP(newTotal, newLevel);
+      }
+
+      showModal("XP DOUBLED! 🚀", `You earned an extra ${additionalXP} XP!`, 'success');
+      return newTotal;
+    });
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.primary }]}>
       {gameState === 'lobby' && (
@@ -517,6 +544,7 @@ export default function App() {
           currentTheme={currentTheme}
           myId={myId}
           xpGainedLastGame={xpGainedLastGame}
+          onDoubleXP={handleDoubleXP}
         />
       )}
 
